@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Funship · Little apps, big family magic</title>
+  <meta name="description" content="Custom little apps made for one family at a time.">
+  <meta name="theme-color" content="#23205C">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M3 26h34l-5.5 8.5h-23z' fill='%234B3FD1'/%3E%3Cpath d='M20 3c1.2 6 4 9 10.5 10.3C24 14.6 21.2 17.5 20 23.5c-1.2-6-4-8.9-10.5-10.2C16 12 18.8 9 20 3z' fill='%23FFC83D'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <button class="sr skip" type="button" onclick="var m=document.getElementById('main');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</button>
+  <div id="app"></div>
+  <script src="js/data.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/views-site.js"></script>
+  <script src="js/views-portal.js"></script>
+  <script src="js/views-admin.js"></script>
+  <script>FS.render();</script>
+</body>
+</html>
