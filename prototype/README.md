@@ -7,7 +7,7 @@ A clickable, front-end-only demo of Funship, built from `docs/PRD.md`. It needs 
 - **Quickest:** download `prototype/index.html` and double-click it. It's one self-contained file (styles, scripts and favicon included), so it works on its own.
 - **With a local server** (needed for the microphone in some browsers): from the repo root run `npx serve prototype` or `python3 -m http.server -d prototype 8000`, then open the address it prints.
 
-Opening the file on github.com only shows its source code. Download it or use a local server.
+Opening the file on github.com only shows its source code, and quick previews (iPhone Files, Mac spacebar preview, email attachments) show the home page but don't run the demo. Open it in Chrome, Safari or Edge.
 
 ## Editing
 
@@ -34,7 +34,7 @@ Use the **Prototype** switcher in the bottom-left corner to view the product as 
 Plain HTML, CSS and JavaScript, no dependencies, so it runs anywhere.
 
 - `index.html`: the generated single-file build (don't edit by hand)
-- `dev.html` + `build.py`: the source page and the bundler
+- `dev.html` + `build.py` + `prerender.js`: the source page, the bundler, and a step that bakes the home page into `index.html` so it never shows blank
 - `icons/`: favicon (SVG, 32px PNG, Apple touch icon, 512px)
 - `styles.css`: design tokens (light and dark), layout, components
 - `js/data.js`: ideas catalogue, tiers, fictional seed data
