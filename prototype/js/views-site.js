@@ -238,7 +238,7 @@
             <p class="small muted" id="giftErr" role="alert"></p>
             <button class="btn sun" type="submit">Continue to payment</button>
           </form>
-          <div style="position:sticky;top:110px" class="stack" style="--gap:16px"><div id="gcprev"></div><p class="small muted" style="margin-top:28px;text-align:center">This is the card they'll get by email. You can print it too.</p></div>
+          <div style="position:sticky;top:110px" class="stack" style="--gap:16px"><div id="gcprev"></div><p class="small muted" style="margin-top:28px;text-align:center">This is the card they'll get by email. They can print it at home.</p></div>
         </div></div>`),
       mount(root) {
         const f = FS.$("#giftform", root);
@@ -258,9 +258,9 @@
             FS.state.gifts.unshift({ id: FS.uid("g"), token, amount: g.amount, from: g.from, to: g.email, toEmail: g.email, forChild: g.forChild === "your kid" ? "" : g.forChild, message: g.message, sendOn: when, status: when > Date.now() + 3600000 ? "SCHEDULED" : "DELIVERED", boughtBy: FS.state.viewer });
             FS.save();
             FS.$("#app").innerHTML = L.site(`<div class="wrap celebrate" style="padding:80px 0 120px">${FS.pip({ cls: "pip", mood: "proud" })}<h1 style="font-size:2.6rem">A little something made just for them</h1>
-              <p class="lede">${when > Date.now() + 3600000 ? `We'll email it on ${FS.date(when, { month: "long", day: "numeric" })}.` : "It's on its way to their inbox."} You can print the card now.</p>
+              <p class="lede">${when > Date.now() + 3600000 ? `We'll email it on ${FS.date(when, { month: "long", day: "numeric" })}.` : "It's on its way to their inbox."} Here's the card they'll get.</p>
               <div style="width:min(440px,100%);margin:20px 0">${giftCardPreview(g)}</div>
-              <div class="row" style="justify-content:center"><button class="btn" onclick="window.print()">Print the card</button><a class="btn ghost" href="#/redeem/${token}">See what they'll see</a></div></div>`);
+              <div class="row" style="justify-content:center"><a class="btn" href="#/redeem/${token}">See what they'll see</a><a class="btn ghost" href="#/gifts">Give another</a></div></div>`);
             FS.confetti();
           } });
         });

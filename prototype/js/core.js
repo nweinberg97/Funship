@@ -131,19 +131,33 @@
   // ---------- Router ----------
   FS.routes = [];
   FS.route = (pattern, view, opts) => FS.routes.push({ re: new RegExp("^" + pattern.replace(/:(\w+)/g, "([^/]+)") + "$"), view, opts: opts || {} });
-  FS.query = () => new URLSearchParams(location.hash.split("?")[1] || "");
-  FS.go = (path) => { if (location.hash === "#" + path) FS.render(); else location.hash = path; };
+  // The current route lives in FS.path, so navigation works even where the address bar
+  // can't be changed (embedded or sandboxed viewers). The hash is kept in sync when allowed.
+  const fromHash = () => { try { const h = location.hash || ""; return h.startsWith("#/") ? h.slice(1) : "/"; } catch (e) { return "/"; } };
+  FS.path = fromHash();
+  FS.query = () => new URLSearchParams(FS.path.split("?")[1] || "");
+  FS.go = (path) => {
+    FS.path = path || "/";
+    try { if (location.hash !== "#" + FS.path) history.pushState(null, "", "#" + FS.path); } catch (e) { /* sandboxed: keep in-page state only */ }
+    FS.render();
+  };
+  let lastPath = null;
 
   FS.render = function () {
-    const path = ((location.hash || "#/").slice(1) || "/").split("?")[0] || "/";
+    const path = (FS.path || "/").split("?")[0] || "/";
     const root = FS.$("#app");
     for (const r of FS.routes) {
       const m = path.match(r.re);
       if (m) {
         if (r.opts.needs && !r.opts.needs(FS.viewer())) { root.innerHTML = FS.layout.gate(r.opts.needs.label); FS.after(); return; }
-        const out = r.view.apply(null, m.slice(1).map(decodeURIComponent));
-        root.innerHTML = typeof out === "string" ? out : out.html;
-        if (out && out.mount) out.mount(root);
+        try {
+          const out = r.view.apply(null, m.slice(1).map(decodeURIComponent));
+          root.innerHTML = typeof out === "string" ? out : out.html;
+          if (out && out.mount) out.mount(root);
+        } catch (err) {
+          console.error(err);
+          root.innerHTML = FS.layout.site(`<div class="wrap empty" style="padding:120px 0"><h1 style="font-size:2rem">This screen didn't load</h1><p class="muted">Reset the demo data and try again.</p><button class="btn" onclick="FS.reset();FS.go('/')">Reset and go home</button></div>`);
+        }
         FS.after(path, r.opts);
         return;
       }
@@ -153,7 +167,8 @@
   };
 
   FS.after = function (path, opts) {
-    window.scrollTo(0, 0);
+    if (path !== lastPath) window.scrollTo(0, 0);
+    lastPath = path;
     if (!(path || "").startsWith("/app/")) document.body.style.background = "";
     const h1 = FS.$("#app h1"); document.title = (h1 ? h1.textContent.trim().replace(/\s+/g, " ") + " | " : "") + "Funship";
     FS.$$(".nav a, .side a").forEach((a) => {
@@ -164,6 +179,17 @@
     FS.layout.demoBar();
   };
 
-  window.addEventListener("hashchange", FS.render);
+  const syncFromHash = () => { const h = fromHash(); if (h !== FS.path) { FS.path = h; FS.render(); } };
+  window.addEventListener("hashchange", syncFromHash);
+  window.addEventListener("popstate", syncFromHash);
+  // Handle in-app links ourselves so they never depend on the hash changing.
+  document.addEventListener("click", (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest && e.target.closest('a[href^="#/"]');
+    if (!a || a.target === "_blank") return;
+    e.preventDefault();
+    const nav = document.getElementById("nav"); if (nav) nav.classList.remove("open");
+    FS.go(a.getAttribute("href").slice(1));
+  });
   window.addEventListener("scroll", () => { const h = FS.$(".site-head"); if (h) h.classList.toggle("scrolled", scrollY > 8); }, { passive: true });
 })();

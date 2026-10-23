@@ -97,7 +97,7 @@
       html: L.admin(`<div class="page-head" style="padding-top:0"><h1 style="font-size:clamp(2rem,4vw,2.8rem)">Builds</h1></div>
         ${ps.length ? ps.map((p) => `<div class="panel"><div class="panel-head"><div><h3>${esc(p.name)}</h3><p class="small muted">${esc(famName(p.familyId))} · target ${FS.date(p.target)}</p></div>
           <div class="row"><label class="sr" for="st-${p.id}">Stage</label><select class="input" id="st-${p.id}" data-stage="${p.id}" style="width:auto">${FS.STAGES.concat([{ id: "delivered", name: "Delivered" }]).map((s) => `<option value="${s.id}"${s.id === p.stage ? " selected" : ""}>${s.name}</option>`).join("")}</select>
-          ${p.previewReady ? `<a class="btn small quiet" href="#/app/${p.appSlug}" target="_blank" rel="noopener">Open preview</a>` : `<button class="btn small" data-preview="${p.id}">Share a preview</button>`}</div></div>
+          ${p.previewReady ? `<a class="btn small quiet" href="#/app/${p.appSlug}">Open preview</a>` : `<button class="btn small" data-preview="${p.id}">Share a preview</button>`}</div></div>
           <form class="row" data-update="${p.id}"><label class="sr" for="up-${p.id}">Update for the family</label><input class="input" id="up-${p.id}" style="flex:1;min-width:220px" placeholder="Write a short update for the family"><button class="btn quiet">Post update</button></form></div>`).join("") : `<div class="panel empty"><p>No builds yet. They start when a family accepts a plan.</p></div>`}`),
       mount(root) {
         FS.$$("[data-stage]", root).forEach((s) => s.onchange = () => { const p = FS.state.projects[s.dataset.stage]; p.stage = s.value; if (s.value === "delivered") p.deliveredAt = Date.now(); p.updates.push({ at: Date.now(), text: `Moved to "${s.options[s.selectedIndex].text}".` }); FS.save(); FS.toast("Stage updated. The family sees it now."); });
@@ -117,9 +117,11 @@
     <div class="grid-ideas">${[["Quest board", "Chores, stars, rewards, characters", "Chore Quest, Pocket Points", 9], ["Story steps", "Branching story pages with art", "Bedtime Story Machine", 11], ["Day planner", "Day cards, checklists, unlocks", "Japan Family Quest", 12], ["Photo book", "Chapters, photo pages, captions", "Our Family Book", 8], ["Countdown", "Dates, daily reveals", "Holiday Countdown", 5], ["Feedback button", "Voice + faces on every screen", "Every app", 0]].map(([n, d, u, h]) => `<div class="panel"><h3>${n}</h3><p class="muted small" style="margin:6px 0 12px">${d}</p><p class="small">Used in: ${u}</p><p class="small muted">${h ? `About ${h}h to adapt` : "Included automatically"}</p></div>`).join("")}</div>`), { needs: isAdmin });
 
   // ---------- Demo delivered app: Chore Quest ----------
-  FS.route("/app/:slug", function () {
+  FS.route("/app/:slug", () => FS.choreApp({ embedded: false, preview: FS.query().get("preview"), from: FS.query().get("from") }));
+
+  FS.choreApp = function (opt) {
     const s = FS.state.choreApp;
-    const preview = FS.query().get("preview");
+    const preview = opt.preview, embedded = opt.embedded;
     const project = Object.values(FS.state.projects).find((p) => p.appSlug === "chen-chore-quest") || {};
     const kid = s.kid, list = s.chores[kid];
     const earned = list.filter((c) => c.done).reduce((n, c) => n + c.s, 0);
@@ -129,10 +131,11 @@
     const creature = s.character === "star" ? FS.pip({ mood: "proud" }) : `<svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="72" rx="38" ry="34" fill="${ch.fill}"/>${s.character === "unicorn" ? '<path d="M60 8 l7 30 h-14z" fill="#FFC83D"/>' : '<path d="M30 46 l-8-22 18 14zM90 46 l8-22-18 14z" fill="' + ch.fill + '"/><path d="M96 70 q20 0 18 20 q-8-8-16-6" fill="' + ch.fill + '"/>'}<circle cx="47" cy="66" r="6" fill="#23205C"/><circle cx="73" cy="66" r="6" fill="#23205C"/><circle cx="49" cy="64" r="2" fill="#fff"/><circle cx="75" cy="64" r="2" fill="#fff"/><path d="M48 84 q12 10 24 0" stroke="#23205C" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse cx="38" cy="80" rx="6" ry="3.5" fill="#fff" opacity=".45"/><ellipse cx="82" cy="80" rx="6" ry="3.5" fill="#fff" opacity=".45"/></svg>`;
     const starSize = s.bigStars ? 34 : 22;
     return {
-      html: `<div style="min-height:100vh;background:linear-gradient(#2B2775,#23205C 40%);color:#fff;font-family:var(--body)">
+      html: `<div class="chore-app${embedded ? " embedded" : ""}">
         <div style="max-width:520px;margin:0 auto;padding:22px 18px 120px">
-          ${preview ? `<div class="mock-banner" style="border-radius:999px;margin-bottom:14px">Preview · made for the Chen family</div>` : ""}
-          <div class="row" style="justify-content:space-between"><h1 style="font-size:1.9rem;color:#fff">Chore Quest</h1>
+          ${embedded ? "" : `<a class="link" href="${FS.viewer().role === "admin" ? "#/admin/projects" : opt.from ? "#/portal/projects/" + opt.from : "#/portal/apps"}" style="color:#CFCBF5;display:inline-flex;gap:6px;align-items:center;margin-bottom:12px">${FS.icon("arrowL").replace("<svg", '<svg style="width:16px"')}Back to ${FS.viewer().role === "admin" ? "the workbench" : "your family"}</a>`}
+          ${preview || embedded ? `<div class="mock-banner" style="border-radius:999px;margin-bottom:14px">Preview · made for the Chen family</div>` : ""}
+          <div class="row" style="justify-content:space-between"><${embedded ? "h2" : "h1"} style="font-size:1.9rem;color:#fff;font-family:var(--display);font-weight:600">Chore Quest</${embedded ? "h2" : "h1"}>
             <div class="row" role="group" aria-label="Who's playing?">${Object.keys(s.chores).map((k) => `<button class="pill" data-kid="${k}" aria-pressed="${k === kid}" style="${k === kid ? "background:#FFC83D;border-color:#FFC83D;color:#23205C" : "background:transparent;color:#fff;border-color:rgba(255,255,255,.3)"}">${k}</button>`).join("")}</div></div>
           <div style="margin-top:18px;background:rgba(255,255,255,.08);border-radius:28px;padding:20px;display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:center">
             <button data-screen="Pick your character" id="charbtn" style="background:none;border:0;cursor:pointer;padding:0" aria-label="Change character, now ${ch.name}">${creature}</button>
@@ -146,19 +149,19 @@
           <details style="margin-top:26px;background:rgba(255,255,255,.06);border-radius:20px;padding:14px 18px"><summary style="cursor:pointer;font-weight:650">For grown-ups</summary>
             <div class="stack" style="--gap:10px;margin-top:12px"><p style="opacity:.85">Reset everyone's quests for a new week. Stars earned are kept.</p><button class="btn small sun" id="reset" style="width:max-content">Start a new week</button></div></details>
         </div>
-        <button id="fab" style="position:fixed;right:18px;bottom:18px;min-height:60px;padding:0 22px 0 16px;border-radius:999px;border:0;background:#FF7FA8;color:#23205C;font:inherit;font-weight:700;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 14px 30px -10px rgba(0,0,0,.5)"><span style="width:30px">${FS.icon("mic")}</span>Tell us what you think</button>
+        <button id="fab" class="app-fab" style="min-height:60px;padding:0 22px 0 16px;border-radius:999px;border:0;background:#FF7FA8;color:#23205C;font:inherit;font-weight:700;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 14px 30px -10px rgba(0,0,0,.5)"><span style="width:30px">${FS.icon("mic")}</span>Tell us what you think</button>
       </div>`,
       mount(root) {
-        document.body.style.background = "#23205C";
+        if (!embedded) document.body.style.background = "#23205C";
         const redraw = () => { FS.save(); FS.render(); };
         FS.$$("[data-kid]", root).forEach((b) => b.onclick = () => { s.kid = b.dataset.kid; redraw(); });
         FS.$$("[data-chore]", root).forEach((b) => b.onclick = () => { const c = list[+b.dataset.chore]; c.done = !c.done; FS.save(); if (c.done && list.every((x) => x.done)) { FS.render(); FS.confetti(); } else FS.render(); });
         FS.$("#charbtn", root).onclick = () => { const order = s.unicornUnlocked ? ["dragon", "unicorn", "star"] : ["dragon", "star"]; s.character = order[(order.indexOf(s.character) + 1) % order.length]; redraw(); };
         FS.$("#reset", root).onclick = () => { Object.keys(s.chores).forEach((k) => { s.banked[k] += s.chores[k].filter((c) => c.done).reduce((n, c) => n + c.s, 0); s.chores[k].forEach((c) => (c.done = false)); }); FS.toast("New week started. Stars kept."); redraw(); };
-        FS.$("#fab", root).onclick = () => FS.feedbackSheet({ projectId: project.id || "p-chore", familyId: "chen", screen: "Star board", kid: kid, onSent() { try { parent.postMessage("fs-feedback-sent", "*"); } catch (e) {} } });
+        FS.$("#fab", root).onclick = () => FS.feedbackSheet({ projectId: project.id || "p-chore", familyId: "chen", screen: "Star board", kid: kid, onSent: FS.render });
       },
     };
-  });
+  };
 
   // When the maker marks the unicorn request done, unlock it in the app.
   const origSave = FS.save;

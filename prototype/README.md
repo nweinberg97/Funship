@@ -4,8 +4,14 @@ A clickable, front-end-only demo of Funship, built from `docs/PRD.md`. It needs 
 
 ## Run it
 
-- **Quickest:** double-click `prototype/index.html`.
+- **Quickest:** download `prototype/index.html` and double-click it. It's one self-contained file (styles, scripts and favicon included), so it works on its own.
 - **With a local server** (needed for the microphone in some browsers): from the repo root run `npx serve prototype` or `python3 -m http.server -d prototype 8000`, then open the address it prints.
+
+Opening the file on github.com only shows its source code. Download it or use a local server.
+
+## Editing
+
+Edit `dev.html`, `styles.css` and `js/*.js` (open `dev.html` to see changes live), then run `python3 prototype/build.py` to regenerate `index.html`.
 
 Use the **Prototype** switcher in the bottom-left corner to view the product as Alex Chen (parent), Jamie Morgan (parent) or the maker (you). **Reset demo** restores the starting data.
 
@@ -27,6 +33,9 @@ Use the **Prototype** switcher in the bottom-left corner to view the product as 
 
 Plain HTML, CSS and JavaScript, no dependencies, so it runs anywhere.
 
+- `index.html`: the generated single-file build (don't edit by hand)
+- `dev.html` + `build.py`: the source page and the bundler
+- `icons/`: favicon (SVG, 32px PNG, Apple touch icon, 512px)
 - `styles.css`: design tokens (light and dark), layout, components
 - `js/data.js`: ideas catalogue, tiers, fictional seed data
 - `js/core.js`: browser storage, router, helpers, icons, the Pip mascot

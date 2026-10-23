@@ -28,17 +28,21 @@
         try {
           rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = true;
           rec.onresult = (e) => { let s = ""; for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript; textarea.value = base + s; };
-          rec.onerror = () => { stop(); };
+          rec.onerror = (ev) => { rec = null; if (ev && /not-allowed|service-not-allowed|audio-capture|network/.test(ev.error)) { demo(); } else stop(); };
           rec.onend = () => { if (on) stop(); };
           rec.start(); set(true, "Listening… tap to stop", "Talk like you'd tell a friend.");
           return;
         } catch (e) { /* fall through to demo */ }
       }
-      // Demo transcript when the browser has no speech recognition.
-      const words = (sample || "We'd love something that makes mornings calmer for the kids.").split(" ");
-      let i = 0; set(true, "Listening… (demo voice)", "This browser can't transcribe, so we're playing a sample.");
-      demoTimer = setInterval(() => { textarea.value = base + words.slice(0, ++i).join(" "); if (i >= words.length) stop(); }, 90);
+      demo();
     });
+    // Demo transcript when the browser can't transcribe or the mic is blocked.
+    function demo() {
+      clearInterval(demoTimer);
+      const words = (sample || "We'd love something that makes mornings calmer for the kids.").split(" ");
+      let i = 0; set(true, "Listening… (demo voice)", "Voice isn't available here, so we're playing a sample.");
+      demoTimer = setInterval(() => { textarea.value = base + words.slice(0, ++i).join(" "); if (i >= words.length) stop(); }, 90);
+    }
   };
 
   FS.micBlock = (id) => `<div class="mic-wrap" data-mic="${id}"><button type="button" class="mic" aria-label="Start recording">${FS.icon("mic")}</button><div class="mic-status"><span>Tap to talk instead of typing<small>Your voice is turned into text, then the recording is deleted.</small></span></div></div>`;

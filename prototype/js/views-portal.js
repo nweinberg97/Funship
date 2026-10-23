@@ -184,7 +184,7 @@
       FS.go("/portal/requests/" + req.id + "/brief");
     }, 1600);
   }
-  const firstSentence = (t) => (t.split(/(?<=[.!?])\s/)[0] || t).trim();
+  const firstSentence = (t) => { const m = t.match(/^[^.!?]*[.!?]?/); return ((m && m[0]) || t).trim(); };
   function guessTitle(t) {
     t = t.toLowerCase();
     const m = [["chore", "Chore Quest"], ["dinner", "Dinner Picker"], ["meal", "Dinner Picker"], ["trip", "Family Adventure Map"], ["bedtime", "Bedtime Lantern"], ["grandma", "Hello, Grandma"], ["birthday", "Birthday Universe"], ["recipe", "Family Recipe Garden"], ["morning", "Morning Mission"], ["spell", "Spelling Safari"]].find(([k]) => t.includes(k));
@@ -327,8 +327,8 @@
       html: L.portal(`<p class="crumb"><a href="#/portal">Home</a> / ${esc(p.name)}</p>
         <div class="page-head" style="padding-top:12px"><h1 style="font-size:clamp(2rem,4vw,2.8rem)">${esc(p.name)}</h1><p class="lede">${delivered ? "It's yours. Time to make a little magic." : `Aiming to be ready around ${FS.date(p.target, { month: "long", day: "numeric" })}.`}</p></div>
         <div class="panel"><ol class="timeline" aria-label="Progress">${FS.STAGES.map((s, i) => { const st = delivered || i < si ? "done" : i === si ? "now" : ""; return `<li class="${st}"${i === si && !delivered ? ' aria-current="step"' : ""}><span class="dot">${st === "done" ? icon("check") : ""}</span><strong>${s.name}</strong><span>${s.note}</span></li>`; }).join("")}</ol></div>
-        ${p.previewReady ? `<div class="panel"><div class="panel-head"><h3>${delivered ? "Your app" : "Try the preview"}</h3><div class="row"><a class="btn small quiet" href="#/app/${p.appSlug}" target="_blank" rel="noopener">${icon("external").replace("<svg", '<svg style="width:16px"')}Open full screen</a>${!delivered && p.stage === "ready" ? `<button class="btn small sun" id="approve">Approve the app</button>` : ""}</div></div>
-          <div class="preview-frame"><div class="preview-bar"><span class="dots"><i></i><i></i><i></i></span>${delivered ? "Your app" : "Preview"} · tap "Tell us what you think" on any screen</div><iframe title="${esc(p.name)} preview" src="index.html#/app/${p.appSlug}?preview=${id}"></iframe></div></div>` : `<div class="panel empty">${FS.pip({ mood: "sleepy" })}<h3>Your preview is being prepared</h3><p class="muted">You'll get an email when it's ready to try.</p></div>`}
+        ${p.previewReady ? `<div class="panel"><div class="panel-head"><h3>${delivered ? "Your app" : "Try the preview"}</h3><div class="row"><a class="btn small quiet" href="#/app/${p.appSlug}?from=${id}">${icon("external").replace("<svg", '<svg style="width:16px"')}Open full screen</a>${!delivered && p.stage === "ready" ? `<button class="btn small sun" id="approve">Approve the app</button>` : ""}</div></div>
+          <div class="preview-frame"><div class="preview-bar"><span class="dots"><i></i><i></i><i></i></span>${delivered ? "Your app" : "Preview"} · tap "Tell us what you think" on any screen</div><div class="inline-app" id="inlineapp"></div></div></div>` : `<div class="panel empty">${FS.pip({ mood: "sleepy" })}<h3>Your preview is being prepared</h3><p class="muted">You'll get an email when it's ready to try.</p></div>`}
         <div class="grid-2" style="margin-top:20px;align-items:start">
           <div class="panel"><h3 style="margin-bottom:16px">Updates from the maker</h3><ul class="updates">${p.updates.slice().reverse().map((u) => `<li><span class="avatar">${FS.pip()}</span><div class="bubble"><time>${FS.ago(u.at)}</time>${esc(u.text)}</div></li>`).join("")}</ul></div>
           <div class="panel"><div class="panel-head"><h3>Your feedback</h3>${p.previewReady ? `<button class="btn small" id="fbbtn">${icon("mic").replace("<svg", '<svg style="width:18px"')}Add feedback</button>` : ""}</div>
@@ -345,7 +345,8 @@
             FS.save(); FS.render(); FS.confetti();
           } });
         };
-        window.onmessage = (e) => { if (e.data === "fs-feedback-sent") FS.render(); };
+        const holder = FS.$("#inlineapp", root);
+        if (holder) { const app = FS.choreApp({ embedded: true, preview: id }); holder.innerHTML = app.html; app.mount(holder); }
       },
     };
   }, { needs: isParent });
@@ -356,7 +357,7 @@
     const apps = Object.values(FS.state.projects).filter((p) => p.familyId === fam.id && p.previewReady);
     return L.portal(`<div class="page-head" style="padding-top:0"><h1 style="font-size:clamp(2rem,4vw,2.8rem)">Our apps</h1></div>
       ${apps.length ? `<div class="grid-ideas">${apps.map((p) => `<div class="idea-tile c-sun"><div class="art" style="min-height:160px">${FS.pip({ mood: p.stage === "delivered" ? "proud" : "happy" }).replace("<svg", '<svg style="width:90px"')}</div><div class="body"><h3>${esc(p.name)}</h3><p class="small muted">${p.stage === "delivered" ? `App birthday: ${FS.date(p.deliveredAt || Date.now(), { month: "long", day: "numeric" })}` : "Preview ready to try"}</p>
-        <div class="row" style="margin-top:10px"><a class="btn small" href="#/app/${p.appSlug}" target="_blank" rel="noopener">Open app</a><a class="btn small quiet" href="#/portal/projects/${p.id}">Details</a></div>
+        <div class="row" style="margin-top:10px"><a class="btn small" href="#/app/${p.appSlug}">Open app</a><a class="btn small quiet" href="#/portal/projects/${p.id}">Details</a></div>
         <details style="margin-top:12px"><summary class="small link">Add it to your home screen</summary><p class="small muted" style="margin-top:8px">On iPhone, open the app in Safari, tap Share, then "Add to Home Screen". On Android, open the browser menu and tap "Add to Home screen".</p></details></div></div>`).join("")}</div>`
       : `<div class="panel empty">${FS.pip()}<h3>Your first app will appear here when it's ready.</h3><a class="btn" href="#/start">Tell us your idea</a></div>`}`);
   }, { needs: isParent });
@@ -387,11 +388,13 @@
           <div><span class="label" style="font-weight:650">People</span><ul class="list" style="margin-top:8px">${fam.members.map((m) => `<li><span class="grow">${esc(m.name)}</span><span class="tag ${m.kind === "child" ? "pink" : "violet"}">${m.kind === "child" ? "Kid, " + m.age : "Grown-up"}</span></li>`).join("")}</ul></div>
           <button class="btn" id="savefam" style="width:max-content">Save changes</button></div>
         <div class="panel stack" style="--gap:12px"><h3>Invite a co-parent</h3><p class="muted">They can see your apps and add feedback. Billing stays with you.</p><div class="row"><input class="input" style="flex:1;min-width:220px" type="email" id="invite" placeholder="partner@example.com" aria-label="Their email"><button class="btn quiet" id="sendinv">Send invite</button></div></div>
-        <div class="panel stack" style="--gap:12px"><h3>Your data</h3><p class="muted">Download everything you've shared with us, or delete it. Deleting removes your apps and can't be undone.</p><div class="row"><button class="btn quiet" id="export">Download our data</button><button class="btn ghost" id="del" style="--fg:var(--danger)">Delete our family's data</button></div></div>`),
+        <div class="panel stack" style="--gap:12px"><h3>Your data</h3><p class="muted">See everything you've shared with us, or delete it. Deleting removes your apps and can't be undone.</p><div class="row"><button class="btn quiet" id="export">See our data</button><button class="btn ghost" id="del" style="--fg:var(--danger)">Delete our family's data</button></div></div>`),
       mount(root) {
         FS.$("#savefam", root).onclick = () => { fam.name = FS.$("#fname", root).value.trim() || fam.name; FS.save(); FS.toast("Changes saved."); FS.render(); };
         FS.$("#sendinv", root).onclick = () => { const e = FS.$("#invite", root).value.trim(); if (!/^\S+@\S+\.\S+$/.test(e)) { FS.toast("Add their email address first."); return; } FS.toast("Invite sent to " + e + " (demo)."); FS.$("#invite", root).value = ""; };
-        FS.$("#export", root).onclick = () => { const data = { family: fam, requests: FS.state.requests.filter((r) => r.familyId === fam.id), feedback: FS.state.feedback.filter((f) => f.familyId === fam.id) }; const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "funship-family-data.json"; a.click(); };
+        FS.$("#export", root).onclick = () => { const data = { family: fam, requests: FS.state.requests.filter((r) => r.familyId === fam.id), feedback: FS.state.feedback.filter((f) => f.familyId === fam.id) }; FS.modal(`<div class="stack" style="--gap:14px"><h2 style="font-size:1.6rem;padding-right:40px">Your family's data</h2><p class="muted">Everything you've shared with Funship in this demo.</p><textarea class="input" id="exportbox" readonly style="min-height:260px;font-size:.85rem">${esc(JSON.stringify(data, null, 2))}</textarea><button class="btn" id="copyexp" type="button">Copy to clipboard</button></div>`, (s) => {
+          FS.$("#copyexp", s).onclick = () => { const box = FS.$("#exportbox", s); const done = () => FS.toast("Copied."); const fallback = () => { box.focus(); box.select(); FS.toast("Selected. Press Ctrl+C or Cmd+C to copy."); }; try { navigator.clipboard.writeText(box.value).then(done, fallback); } catch (e) { fallback(); } };
+        }); };
         FS.$("#del", root).onclick = () => FS.modal(`<div class="stack" style="--gap:16px"><h2 style="font-size:1.6rem;padding-right:40px">Delete ${esc(fam.name)}'s data?</h2><p class="muted">This removes your requests, apps and feedback from this demo. It can't be undone.</p><div class="row"><button class="btn" data-close>Keep our data</button><button class="btn ghost" id="really" style="--fg:var(--danger)">Delete everything</button></div></div>`, (s, close) => {
           FS.$("#really", s).onclick = () => { FS.state.requests = FS.state.requests.filter((r) => r.familyId !== fam.id); FS.state.feedback = FS.state.feedback.filter((f) => f.familyId !== fam.id); Object.keys(FS.state.projects).forEach((k) => { if (FS.state.projects[k].familyId === fam.id) delete FS.state.projects[k]; }); FS.save(); close(); FS.toast("Your family's data was deleted."); FS.go("/portal"); };
         });

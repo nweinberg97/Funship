@@ -514,3 +514,8 @@ textarea.input { min-height: 140px; resize: vertical; line-height: 1.5; }
 .kv li { flex-wrap: nowrap; justify-content: space-between; }
 .kv .grow { min-width: 0; }
 .kv b { text-align: right; }
+/* Demo delivered app */
+.chore-app { min-height: 100vh; background: linear-gradient(#2B2775, #23205C 40%); color: #fff; font-family: var(--body); position: relative; }
+.chore-app.embedded { min-height: 0; max-height: 640px; overflow: auto; }
+.app-fab { position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: max(18px, env(safe-area-inset-bottom, 0px)); z-index: 5; }
+.chore-app.embedded .app-fab { position: sticky; margin: -84px 18px 18px auto; bottom: 18px; }

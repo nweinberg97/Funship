@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Funship · Little apps, big family magic</title>
+  <meta name="description" content="Custom little apps made for one family at a time.">
+  <meta name="theme-color" content="#23205C">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <button class="sr skip" type="button" onclick="var m=document.getElementById('main');if(m){m.setAttribute('tabindex','-1');m.focus();}">Skip to content</button>
+  <div id="app"></div>
+  <script src="js/data.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/views-site.js"></script>
+  <script src="js/views-portal.js"></script>
+  <script src="js/views-admin.js"></script>
+  <script>FS.render();</script>
+</body>
+</html>
