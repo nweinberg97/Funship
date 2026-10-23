@@ -27,3 +27,8 @@ try:
     subprocess.run(["node", str(here / "prerender.js")], check=True)
 except Exception as e:
     print("skipped prerender (needs Node + Playwright):", e)
+
+# Publish to the repo root too, which is what GitHub Pages serves.
+import shutil
+shutil.copyfile(here / "index.html", here.parent / "index.html")
+print("copied to repo root index.html for GitHub Pages")
