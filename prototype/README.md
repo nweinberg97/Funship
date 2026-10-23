@@ -25,7 +25,7 @@ Use the **Prototype** switcher in the bottom-left corner to view the product as 
 | Booking and paying | Book an idea session; accept Jamie's Japan Family Quest plan (demo checkout, no card charged) |
 | Build tracking | Chore Quest project: four-stage timeline, maker updates, live preview |
 | Voice feedback | "Tell us what you think" in the Chore Quest app: kid mode with faces, mic, follow-up question |
-| Gifts | Buy a gift with a live card preview, print it, redeem it at `#/redeem/demo-gift` |
+| Gifts | Buy a gift with a live card preview, then redeem it at `#/redeem/demo-gift` |
 | Maker workbench | Today view, requests, sending a plan and price, feedback board, builds, calls, gifts, App Kit |
 | Delivered app | `#/app/chen-chore-quest`: tick chores, earn stars, switch kids, change character. Mark the unicorn feedback "Done" in the workbench to unlock the unicorn and bigger stars |
 
